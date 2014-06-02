@@ -1,0 +1,50 @@
+REM  *****  BASIC  *****
+
+'---------- 
+' This function looks up the price of a stock symbol from yahoo. 
+' Pass in these parameters: 
+'      cStockSymbol - a string, which is the stock symbol. 
+'   Returns: 
+'      A number which is the price of the stock. 
+' 
+Function GetPe( ByVal cStockSymbol As String ) As Double 
+   ' Use this URL to get a stock symbol from Yahoo. 
+   ' For example, this URL... 
+   '   http://quote.yahoo.com/d/quotes.csv?s=RHAT&s=MSFT&f=sl1d1t1c1ohgv&e=.csv 
+   '  would return a CSV file with the prices for both Red Hat and Microsoft. 
+   ' Similarly, we can form a URL for a single stock, based upon the parameter. 
+   cURL = "http://quote.yahoo.com/d/quotes.csv?s=" + cStockSymbol + "&f=r&e=.csv" 
+    
+   ' Open up a new spreadsheet from the above URL. 
+   ' Specify the CSV filter with options that decode the CSV format comming back from Yahoo. 
+   ' Specify the Hidden property so that the spreadsheet does not appear on the screen. 
+   oCalcDoc = StarDesktop.loadComponentFromURL( cURL, "_blank", 0,_ 
+      Array( MakePropertyValue( "FilterName", "Text - txt - csv (StarCalc)" ),_ 
+            MakePropertyValue( "FilterOptions", "44,34,SYSTEM,1,1/10/2/10/3/10/4/10/5/10/6/10/7/10/8/10/9/10" ),_ 
+            MakePropertyValue( "Hidden", True ) ) ) 
+    
+   ' Get the first sheet of the Calc document. 
+   oSheet = oCalcDoc.getSheets().getByIndex( 0 ) 
+   ' Get the cell B1, which is the stock price.  (Row 0, Col 1.) 
+   nValue = oSheet.getCellByPosition( 0, 0 ).getValue() 
+
+   ' Be sure the close the spreadsheet, because it is hidden, and the user cannot close it. 
+   oCalcDoc.close( True ) 
+    
+   ' Return the value. 
+   GetPe() = nValue 
+End Function
+
+'---------- 
+'   Create and return a new com.sun.star.beans.PropertyValue. 
+' 
+Function MakePropertyValue( Optional cName As String, Optional uValue ) As com.sun.star.beans.PropertyValue 
+   Dim oPropertyValue As New com.sun.star.beans.PropertyValue 
+   If Not IsMissing( cName ) Then 
+      oPropertyValue.Name = cName 
+   EndIf 
+   If Not IsMissing( uValue ) Then 
+      oPropertyValue.Value = uValue 
+   EndIf 
+   MakePropertyValue() = oPropertyValue 
+End Function 
